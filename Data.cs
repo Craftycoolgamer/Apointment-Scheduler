@@ -873,83 +873,82 @@ namespace Apointment_Scheduler
         #endregion
         #endregion
 
-        //For Local Machine Testing
         #region Initialize Database
-        //public static bool InitializeDatabase()
-        //{
-        //    bool isNewDb = false;
-        //    try
-        //    {
-        //        conn.Open();
+        public static bool InitializeDatabase()
+        {
+            bool isNewDb = false;
+            try
+            {
+                conn.Open();
 
-        //        MySqlCommand tableCMD = new MySqlCommand(CheckTablesExistQuery, conn);
-        //        int tableCount = Convert.ToInt32(tableCMD.ExecuteScalar());
+                MySqlCommand tableCMD = new MySqlCommand(CheckTablesExistQuery, conn);
+                int tableCount = Convert.ToInt32(tableCMD.ExecuteScalar());
 
-        //        MySqlCommand userCMD = new MySqlCommand(GetUserCount, conn);
-        //        int userCount = Convert.ToInt32(userCMD.ExecuteScalar());
-        //        if (tableCount < 6 || userCount == 0)  // If not all tables exist or no users exist, initialize the database
-        //        {
-        //            MySqlCommand initCmd = new MySqlCommand(InitializeDatabaseQuery, conn);
-        //            initCmd.ExecuteNonQuery();
-        //            isNewDb = true;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show("An error occurred: " + ex.Message);
-        //    }
-        //    finally
-        //    {
-        //        conn.Close() ;
-        //    }
-        //    return isNewDb;
-        //}
-        //public static string GetUserCount => "SELECT COUNT(*) FROM user;";
-        //public static string InitializeDatabaseQuery => @"
-        //        USE `client_schedule`;
+                MySqlCommand userCMD = new MySqlCommand(GetUserCount, conn);
+                int userCount = Convert.ToInt32(userCMD.ExecuteScalar());
+                if (tableCount < 6 || userCount == 0)  // If not all tables exist or no users exist, initialize the database
+                {
+                    MySqlCommand initCmd = new MySqlCommand(InitializeDatabaseQuery, conn);
+                    initCmd.ExecuteNonQuery();
+                    isNewDb = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("An error occurred: " + ex.Message);
+            }
+            finally
+            {
+                conn.Close();
+            }
+            return isNewDb;
+        }
+        public static string GetUserCount => "SELECT COUNT(*) FROM user;";
+        public static string InitializeDatabaseQuery => @"
+                USE `client_schedule`;
 
-        //        -- populate table `country`
-        //        INSERT INTO `country` VALUES 
-        //        (1,'US','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
-        //        (2,'Canada','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
-        //        (3,'Norway','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test');
+                -- populate table `country`
+                INSERT INTO `country` VALUES 
+                (1,'US','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
+                (2,'Canada','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
+                (3,'Norway','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test');
 
-        //        -- populate table `city`
-        //        INSERT INTO `city` VALUES 
-        //        (1,'New York',1,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
-        //        (2,'Los Angeles',1,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
-        //        (3,'Toronto',2,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
-        //        (4,'Vancouver',2,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
-        //        (5,'Oslo',3,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test');
+                -- populate table `city`
+                INSERT INTO `city` VALUES 
+                (1,'New York',1,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
+                (2,'Los Angeles',1,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
+                (3,'Toronto',2,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
+                (4,'Vancouver',2,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
+                (5,'Oslo',3,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test');
 
-        //        -- populate table `address`
-        //        INSERT INTO `address` VALUES 
-        //        (1,'123 Main','',1,'11111','555-1212','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
-        //        (2,'123 Elm','',3,'11112','555-1213','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
-        //        (3,'123 Oak','',5,'11113','555-1214','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test');
+                -- populate table `address`
+                INSERT INTO `address` VALUES 
+                (1,'123 Main','',1,'11111','555-1212','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
+                (2,'123 Elm','',3,'11112','555-1213','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
+                (3,'123 Oak','',5,'11113','555-1214','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test');
 
-        //        -- populate table `customer`
-        //        INSERT INTO `customer` VALUES 
-        //        (1,'John Doe',1,1,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
-        //        (2,'Alfred E Newman',2,1,'2023-09-17 00:00:00','test2','2023-09-17 00:00:00','test2'),
-        //        (3,'Ina Prufung',3,1,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test');
+                -- populate table `customer`
+                INSERT INTO `customer` VALUES 
+                (1,'John Doe',1,1,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
+                (2,'Alfred E Newman',2,1,'2023-09-17 00:00:00','test2','2023-09-17 00:00:00','test2'),
+                (3,'Ina Prufung',3,1,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test');
 
-        //        -- populate table `user`
-        //        INSERT INTO `user` VALUES 
-        //        (1,'test','test',1,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
-        //        (2,'test2','test2',1,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test2');
+                -- populate table `user`
+                INSERT INTO `user` VALUES 
+                (1,'test','test',1,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
+                (2,'test2','test2',1,'2023-09-17 00:00:00','test','2023-09-17 00:00:00','test2');
 
-        //        -- populate table `appointment`
-        //        INSERT INTO `appointment` VALUES 
-        //        (1,1,1,'not needed','not needed','not needed','not needed','Presentation','not needed','2023-09-17 00:00:00','2023-09-17 00:00:00','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
-        //        (2,2,1,'not needed','not needed','not needed','not needed','Scrum','not needed','2023-09-17 00:00:00','2023-09-17 00:00:00','2023-09-17 00:00:00','test2','2023-09-17 00:00:00','test2');
-        //        ";
-        //public static string CheckTablesExistQuery => @"
-        //        SELECT COUNT(*) 
-        //        FROM information_schema.tables 
-        //        WHERE table_schema = 'client_schedule' 
-        //          AND table_name IN ('country', 'city', 'address', 'customer', 'user', 'appointment');
-        //        ";
+                -- populate table `appointment`
+                INSERT INTO `appointment` VALUES 
+                (1,1,1,'not needed','not needed','not needed','not needed','Presentation','not needed','2023-09-17 00:00:00','2023-09-17 00:00:00','2023-09-17 00:00:00','test','2023-09-17 00:00:00','test'),
+                (2,2,1,'not needed','not needed','not needed','not needed','Scrum','not needed','2023-09-17 00:00:00','2023-09-17 00:00:00','2023-09-17 00:00:00','test2','2023-09-17 00:00:00','test2');
+                ";
+        public static string CheckTablesExistQuery => @"
+                SELECT COUNT(*) 
+                FROM information_schema.tables 
+                WHERE table_schema = 'client_schedule' 
+                  AND table_name IN ('country', 'city', 'address', 'customer', 'user', 'appointment');
+                ";
         #endregion
     }
 }

@@ -100,7 +100,7 @@ namespace Apointment_Scheduler
             InitializeComponent();
             CheckLanguage();
 
-            //Data.InitializeDatabase();
+            Data.InitializeDatabase();
         }
 
         private void btnExit_Click(object sender, EventArgs e)
