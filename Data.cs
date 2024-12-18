@@ -892,7 +892,6 @@ namespace Apointment_Scheduler
                 "WHERE u.userName = @UserName AND u.userId = @UserId " +
                 "ORDER BY ap.start";
 
-        //TODO: Not Done yet
         public static string AppointmentTypeQuery => "SELECT ap.appointmentId, ap.customerId, ap.userId, ap.description, ap.location, " +
                 "ap.type, ap.url, ap.start, ap.end, u.userName, " +
                 "c.customerName, a.phone, a.addressId, a.cityId, ci.countryId " +

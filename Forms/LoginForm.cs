@@ -180,7 +180,6 @@ namespace Apointment_Scheduler
         private void CheckLanguage()
         {
             //Requirement 1A: Determine a user’s location.
-            //TODO: show user locaation
             CultureInfo culture = CultureInfo.CurrentCulture;
             CultureInfo main = new CultureInfo("en-US");
 
