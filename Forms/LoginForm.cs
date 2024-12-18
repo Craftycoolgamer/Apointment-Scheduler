@@ -109,16 +109,15 @@ namespace Apointment_Scheduler
         }
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            MySqlConnection conn = new MySqlConnection(Data.connectionString);
             string username = txtUsername.Text;
             string password = txtPassword.Text;
            
             try
             {
                 //Requirment 1C: Verify the correct username and password
-                conn.Open();
+                Data.conn.Open();
                 string LoginQuery = "SELECT userId, userName, password FROM user WHERE userName = '" + username + "' AND password = '" + password + "'";
-                MySqlDataAdapter sda = new MySqlDataAdapter(LoginQuery, conn);
+                MySqlDataAdapter sda = new MySqlDataAdapter(LoginQuery, Data.conn);
 
                 DataTable dt = new DataTable();
                 sda.Fill(dt);
@@ -216,10 +215,6 @@ namespace Apointment_Scheduler
             catch
             {
                 throw;
-            }
-            finally
-            {
-                Data.conn.Close();
             }
 
             if (result)
