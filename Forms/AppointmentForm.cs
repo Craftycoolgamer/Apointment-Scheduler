@@ -69,17 +69,15 @@ namespace Apointment_Scheduler.Forms
             DateTime startTimeDT = Data.ConvertStringToDateTime(selectedDate, startTime);
             DateTime endTimeDT = Data.ConvertStringToDateTime(selectedDate, endTime);
 
+
             //Requirement 3A: Time Validation
             if (!(startTimeDT <= endTimeDT))
             {
                 MessageBox.Show("Error: Start Time is before End Time");
                 return;
             }
-
             var appointmentData = new Dictionary<string, string>
             {
-                { "CustomerId", ((KeyValuePair<int, string>)cbxName.SelectedItem).Key.ToString() },
-                { "UserId", ((KeyValuePair<int, string>)cbxConsultant.SelectedItem).Key.ToString() },
                 { "CustomerName", cbxName.Text },
                 { "ConsultantName", cbxConsultant.Text },
                 { "Description", txtDescription.Text },
@@ -87,9 +85,11 @@ namespace Apointment_Scheduler.Forms
                 { "VisitType", cbxType.Text },
                 { "AppointmentId", appointmentId.ToString() }
             };
+            int CustomerId = Convert.ToInt32(cbxName.SelectedValue);
+            int ConsultantId = Convert.ToInt32(cbxConsultant.SelectedValue);
 
             // Requirement 3: Add/Update appointments
-            Data.SaveAppointment(appointmentData, startTimeDT, endTimeDT, update);
+            Data.SaveAppointment(appointmentData, startTimeDT, endTimeDT, CustomerId, ConsultantId, update);
             this.Close();
         }
         private void dtpDay_ValueChanged(object sender, EventArgs e)
@@ -105,22 +105,22 @@ namespace Apointment_Scheduler.Forms
         {
             //Requirement 3B: Using combo box to prevent invalid user input
             //set all combo boxes datasoures
-            //MessageBox.Show(Data.customerNames[0]);
-            cbxName.DataSource = Data.customerNames;
-            cbxConsultant.DataSource = Data.userNames;
+            cbxConsultant.DisplayMember = "userName";
+            cbxConsultant.ValueMember = "userId";
+            cbxConsultant.DataSource = Data.GetUserNames();
 
-            cbxConsultant.DisplayMember = "Value";
-            cbxName.DisplayMember = "Value";
-            cbxConsultant.ValueMember = "Key";
-            cbxName.ValueMember = "Key";
+            cbxName.DisplayMember = "customerName";
+            cbxName.ValueMember = "customerId";
+            cbxName.DataSource = Data.GetCustomerNames();
+
             cbxLocation.DataSource = Enum.GetNames(typeof(Locations));
             cbxType.DataSource = Enum.GetNames(typeof(VisitTypes));
 
             var avalable = Data.GetAvailableSlots(dtpDay.Value); //List<KeyValuePair<string, string>>
-            cbxSTime.DataSource = avalable;
-            cbxETime.DataSource = avalable;
             cbxSTime.DisplayMember = "Key";
             cbxETime.DisplayMember = "Value";
+            cbxSTime.DataSource = avalable;
+            cbxETime.DataSource = avalable;
 
         }
 

@@ -129,9 +129,6 @@ namespace Apointment_Scheduler
                     Data.User = dt.Rows[0].Field<string>("userName");
                     Data.UserId = dt.Rows[0].Field<int>("userId").ToString();
 
-                    Data.GetCustomerNames();
-                    Data.GetUserNames();
-
                     //Requirement 6: Generates an alert whenever a user who has an appointment within 15 minutes logs in to their account.
                     CheckAppointments();
 
@@ -209,27 +206,28 @@ namespace Apointment_Scheduler
 
         private void CheckAppointments()
         {
-            bool result;
+            DataTable dataTable = new DataTable();
             try
             {
-                using (var upcomingAppointmentCMD = new MySqlCommand(Data.UpcomingAppointmentQuery, Data.conn))
+                using (MySqlCommand cmd = new MySqlCommand(Data.UpcomingAppointmentQuery, Data.conn))
                 {
                     var currentTime = DateTime.UtcNow;
-                    upcomingAppointmentCMD.Parameters.AddWithValue("@userId", Data.UserId);
-                    upcomingAppointmentCMD.Parameters.AddWithValue("@currentTime", currentTime.ToString("yyyy-MM-dd HH:mm:ss"));
-                    int upcomingAppointmentCount = Convert.ToInt32(upcomingAppointmentCMD.ExecuteScalar());
-                    result = upcomingAppointmentCount > 0;
+                    cmd.Parameters.AddWithValue("@userId", Data.UserId);
+                    cmd.Parameters.AddWithValue("@currentTime", currentTime.ToString("yyyy-MM-dd HH:mm:ss"));
+                    using (MySqlDataAdapter adapter = new MySqlDataAdapter(cmd))
+                    {
+                        adapter.Fill(dataTable);
+                    }
                 }
             }
             catch
             {
                 throw;
             }
-
-            if (result)
+            if (dataTable.Rows.Count > 0)
             {
-                //TODO: Needs to be more specific
-                MessageBox.Show("You have an upcoming appointment.");
+                dataTable = Data.ConvertToLocal(dataTable);
+                MessageBox.Show("You have an upcoming appointment on " + dataTable.Rows[0].Field<DateTime>("start"));
             }
         }
         

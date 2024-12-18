@@ -124,6 +124,11 @@ namespace Apointment_Scheduler
         }
         private void btnDelete_Click(object sender, EventArgs e)
         {
+            if (dgvMain.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Error: Nothing Selected");
+                return;
+            }
             //Requirement 2B and 3B: Delete Exeption Handling
             DialogResult result = MessageBox.Show("Do you want to delete? This cannot be undone.", "Confirmation", MessageBoxButtons.YesNo);
             if (result == DialogResult.No)
@@ -134,18 +139,16 @@ namespace Apointment_Scheduler
             {
                 //delete customer query
                 Data.conn.Open();
-                string DeleteCustomerQuery = "DELETE FROM customer WHERE customerId = " +
-                                             dgvMain.SelectedRows[0].Cells["customerId"].Value.ToString();
-                new MySqlDataAdapter(DeleteCustomerQuery, Data.conn);
+                int customerId = Convert.ToInt32(dgvMain.SelectedRows[0].Cells["customerId"].Value);
+                Data.DeleteCustomer(customerId);
                 Data.conn.Close();
             }
             else if (formState == FormState.Appointments)
             {
                 //delete appointments query
                 Data.conn.Open();
-                string DeleteAppointmentQuery = "DELETE FROM appointment WHERE appointmentId = " +
-                                                dgvMain.SelectedRows[0].Cells["appointmentId"].Value.ToString();
-                MySqlDataAdapter deletecustomer = new MySqlDataAdapter(DeleteAppointmentQuery, Data.conn);
+                int appointmentId = Convert.ToInt32(dgvMain.SelectedRows[0].Cells["appointmentId"].Value);
+                Data.DeleteAppointment(appointmentId);
                 Data.conn.Close();
             }
             else
@@ -269,9 +272,9 @@ namespace Apointment_Scheduler
                 tabAppointments.ForeColor = Color.Black;
                 tabReports.ForeColor = mainColor;
                 lblReports.Text = "Consultant";
-                cbxReports.DataSource = Data.userNames;
-                cbxReports.DisplayMember = "Value";
-                cbxReports.ValueMember = "Key";
+                cbxReports.DataSource = Data.GetUserNames();
+                cbxReports.DisplayMember = "userName";
+                cbxReports.ValueMember = "userId";
 
 
                 btnAdd.Hide();

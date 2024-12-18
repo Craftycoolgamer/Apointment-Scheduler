@@ -17,6 +17,7 @@ using System.Data.Common;
 using Microsoft.VisualBasic.ApplicationServices;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using static System.Net.Mime.MediaTypeNames;
+using System.Security.Cryptography;
 
 
 
@@ -68,8 +69,7 @@ namespace Apointment_Scheduler
     {
         public static string connectionString = "server=localhost;user=sqlUser;database=client_schedule;port=3306;password=Passw0rd!";
         public static MySqlConnection conn = new MySqlConnection(connectionString);
-        public static List<KeyValuePair<int, string>> userNames = new List<KeyValuePair<int, string>>();
-        public static List<KeyValuePair<int, string>> customerNames = new List<KeyValuePair<int, string>>();
+        
         //public static List<KeyValuePair<int, string>> Months = new List<KeyValuePair<int, string>>();
 
 
@@ -122,43 +122,19 @@ namespace Apointment_Scheduler
             return ConvertToLocal(appointmentsDataTable);
         }
         public static int GetNewId(string query, MySqlConnection conn) => Convert.ToInt32(new MySqlCommand(query, conn).ExecuteScalar()) + 1;
-        public static void GetUserNames()
+        public static DataTable GetUserNames()
         {
-            try
-            {
-                using (var cmd = new MySqlCommand(Data.GetUsersQuery, Data.conn))
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        userNames.Add(new KeyValuePair<int, string>(reader.GetInt32("userId"), reader.GetString("userName")));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            MySqlDataAdapter sda = new MySqlDataAdapter(GetUsersQuery, conn);
+            DataTable Users = new DataTable();
+            sda.Fill(Users);
+            return Users;
         }
-        public static void GetCustomerNames()
+        public static DataTable GetCustomerNames()
         {
-            try
-            {
-                using (MySqlCommand cmd = new MySqlCommand(Data.GetCustomersQuery, Data.conn))
-                {
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            customerNames.Add(new KeyValuePair<int, string>(reader.GetInt32("customerId"), reader.GetString("customerName")));
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            MySqlDataAdapter sda = new MySqlDataAdapter(GetCustomersQuery, conn);
+            DataTable Customers = new DataTable();
+            sda.Fill(Customers);
+            return Customers;
         }
 
 
@@ -245,7 +221,7 @@ namespace Apointment_Scheduler
 
 
         #region Time slots
-        private static DataTable ConvertToLocal(DataTable table)
+        public static DataTable ConvertToLocal(DataTable table)
         {
             //This converts start and end dates to local timezone accounting for Daylight Savings Time
             foreach (DataRow row in table.Rows)
@@ -520,6 +496,7 @@ namespace Apointment_Scheduler
             }
             using (var customerInsertCommand = new MySqlCommand(query, conn))
             {
+                //customerNames.Add(new KeyValuePair<int, string>(customerId, customerData["CustomerName"]));
                 customerInsertCommand.Parameters.AddWithValue("@CustomerId", customerId);
                 customerInsertCommand.Parameters.AddWithValue("@CustomerName", customerData["CustomerName"]);
                 customerInsertCommand.Parameters.AddWithValue("@AddressId", latestAddressId);
@@ -531,10 +508,44 @@ namespace Apointment_Scheduler
                 customerInsertCommand.ExecuteNonQuery();
             }
         }
+        public static void DeleteCustomer(int customerId)
+        {
+            try
+            {
+                using (var transaction = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var deleteAppointmentsCMD = new MySqlCommand(DeleteCustomerAppointmentsQuery, conn))
+                        {
+                            deleteAppointmentsCMD.Parameters.AddWithValue("@CustomerId", customerId);
+                            deleteAppointmentsCMD.ExecuteNonQuery();
+                        }
+
+                        using (var deleteCustomerCMD = new MySqlCommand(DeleteCustomerQuery, conn))
+                        {
+                            deleteCustomerCMD.Parameters.AddWithValue("@CustomerId", customerId);
+                            deleteCustomerCMD.Prepare();
+                            deleteCustomerCMD.ExecuteNonQuery();
+                        }
+                        transaction.Commit(); // Success? Commit
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
         #endregion
 
         #region Save Appointment Data
-        public static void SaveAppointment(Dictionary<string, string> appointmentData, DateTime startTime, DateTime endTime, bool isUpdate)
+        public static void SaveAppointment(Dictionary<string, string> appointmentData, DateTime startTime, DateTime endTime, int CustomerId, int UserId, bool isUpdate)
         {
             //Requirement 3B: Add/Update Exeption Handling
             try
@@ -556,7 +567,7 @@ namespace Apointment_Scheduler
                                 query = appointmentInsertQuery;
                             }
                         }
-                        SaveAppointmentData(appointmentData, startTime, endTime, isUpdate, conn, query);
+                        SaveAppointmentData(appointmentData, startTime, endTime, isUpdate, CustomerId, UserId, conn, query);
                         transaction.Commit();
                     }
                     catch
@@ -575,13 +586,13 @@ namespace Apointment_Scheduler
                 conn.Close();
             }
         }
-        private static void SaveAppointmentData(Dictionary<string, string> appointmentData, DateTime startTime, DateTime endTime, bool isUpdate, MySqlConnection conn, string query)
+        private static void SaveAppointmentData(Dictionary<string, string> appointmentData, DateTime startTime, DateTime endTime, bool isUpdate, int CustomerId, int UserId, MySqlConnection conn, string query)
         {
             using (var appointmentInsertCMD = new MySqlCommand(query, conn))
             {
                 appointmentInsertCMD.Parameters.AddWithValue("@AppointmentId", appointmentData["AppointmentId"]);
-                appointmentInsertCMD.Parameters.AddWithValue("@CustomerId", appointmentData["CustomerId"]);
-                appointmentInsertCMD.Parameters.AddWithValue("@UserId", appointmentData["UserId"]);
+                appointmentInsertCMD.Parameters.AddWithValue("@CustomerId", CustomerId);
+                appointmentInsertCMD.Parameters.AddWithValue("@UserId", UserId);
                 appointmentInsertCMD.Parameters.AddWithValue("@Title", "not needed");
                 appointmentInsertCMD.Parameters.AddWithValue("@Description", appointmentData["Description"]);
                 appointmentInsertCMD.Parameters.AddWithValue("@Location", appointmentData["Location"]);
@@ -692,6 +703,35 @@ namespace Apointment_Scheduler
             textBox.BackColor = isValid ? Color.White : Color.Salmon;
             return isValid;
         }
+        public static void DeleteAppointment(int appointmentId)
+        {
+            try
+            {
+                using (var transaction = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var deleteAppointmentCMD = new MySqlCommand(DeleteAppointmentQuery, conn))
+                        {
+                            deleteAppointmentCMD.Parameters.AddWithValue("@AppointmentId", appointmentId);
+                            deleteAppointmentCMD.Prepare();
+                            deleteAppointmentCMD.ExecuteNonQuery();
+                        }
+                        transaction.Commit(); // Success? Commit
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            
+        }
         #endregion
 
 
@@ -774,6 +814,8 @@ namespace Apointment_Scheduler
                 "lastUpdateBy = @LastUpdateBy " +
                 "WHERE customerId = @CustomerId";
         public static string GetCustomersQuery => "SELECT customerId, customerName FROM customer";
+        public static string DeleteCustomerAppointmentsQuery => "DELETE FROM appointment WHERE customerId = @CustomerId";
+        public static string DeleteCustomerQuery => "DELETE FROM customer WHERE customerId = @CustomerId";
         #endregion
 
         #region Appointment Queries
@@ -816,7 +858,12 @@ namespace Apointment_Scheduler
 
         public static string AppointmentIdxQuery => "SELECT appointmentId FROM appointment ORDER BY appointmentId DESC LIMIT 1";
         public static string DeleteAppointmentQuery => "DELETE FROM appointment WHERE appointmentId = @AppointmentId";
-        public static string UpcomingAppointmentQuery => "SELECT COUNT(*) FROM appointment WHERE start BETWEEN @currentTime AND DATE_ADD(@currentTime, INTERVAL 15 MINUTE) AND userId=@userId";
+        public static string UpcomingAppointmentQuery =>
+                "SELECT ap.start, ap.end, c.customerName " +
+                "FROM appointment ap " +
+                "JOIN customer c ON ap.customerId = c.customerId " +
+                "WHERE start BETWEEN @currentTime AND DATE_ADD(@currentTime, INTERVAL 15 MINUTE) AND userId=@userId " +
+                "ORDER BY start ASC";
 
         #endregion
 
