@@ -24,6 +24,9 @@ using System.Security.Policy;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
 using System.Data.Common;
+using Xamarin.Essentials;
+using Location = Xamarin.Essentials.Location;
+
 
 #region Requirements
 //  Requirements
@@ -118,7 +121,6 @@ namespace Apointment_Scheduler
                 Data.conn.Open();
                 string LoginQuery = "SELECT userId, userName, password FROM user WHERE userName = '" + username + "' AND password = '" + password + "'";
                 MySqlDataAdapter sda = new MySqlDataAdapter(LoginQuery, Data.conn);
-
                 DataTable dt = new DataTable();
                 sda.Fill(dt);
 
@@ -138,6 +140,7 @@ namespace Apointment_Scheduler
 
                     //load Main Form
                     this.Hide();
+                    Data.conn.Close();
                     MainForm mainForm = new MainForm();
                     mainForm.ShowDialog();
                 }
@@ -150,14 +153,13 @@ namespace Apointment_Scheduler
                     txtUsername.Focus();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show("Error");
+                MessageBox.Show(ex.Message);
             }
             finally
             {
-                //close connection
-                conn.Close();
+                Data.conn.Close();
             }
 
 
@@ -181,14 +183,15 @@ namespace Apointment_Scheduler
         private void CheckLanguage()
         {
             //Requirement 1A: Determine a user’s location.
+            //TODO: show user locaation
             CultureInfo culture = CultureInfo.CurrentCulture;
             CultureInfo main = new CultureInfo("en-US");
-            //CultureInfo sp = new CultureInfo("es-ES");
+
 
             //Requirement 1B: Translate login and error control messages (e.g., “The username and password do not match.”) into English and one additional language.
-
             if (culture.EnglishName != main.EnglishName)
             {
+                lblLocation.Text = "Location: " + culture.DisplayName;
                 //lblHeader.Text = "Por favor Iniciar sesión";
                 lblUsername.Text = "Nombre de usuario";
                 lblPassword.Text = "Contraseña";
@@ -196,13 +199,19 @@ namespace Apointment_Scheduler
                 btnExit.Text = "Salida";
                 ErrorMessage = "El nombre de usuario y la contraseña no coinciden";
             }
+
+            lblLocation.Text = "Location: " + main.DisplayName;
+            
         }
+
+
+
+
         private void CheckAppointments()
         {
             bool result;
             try
             {
-                Data.conn.Open();
                 using (var upcomingAppointmentCMD = new MySqlCommand(Data.UpcomingAppointmentQuery, Data.conn))
                 {
                     var currentTime = DateTime.UtcNow;
@@ -219,6 +228,7 @@ namespace Apointment_Scheduler
 
             if (result)
             {
+                //TODO: Needs to be more specific
                 MessageBox.Show("You have an upcoming appointment.");
             }
         }

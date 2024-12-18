@@ -34,6 +34,7 @@
             lblUsername = new Label();
             btnLogin = new Button();
             btnExit = new Button();
+            lblLocation = new Label();
             SuspendLayout();
             // 
             // txtUsername
@@ -88,11 +89,21 @@
             btnExit.UseVisualStyleBackColor = true;
             btnExit.Click += btnExit_Click;
             // 
+            // lblLocation
+            // 
+            lblLocation.AutoSize = true;
+            lblLocation.Location = new Point(107, 49);
+            lblLocation.Name = "lblLocation";
+            lblLocation.Size = new Size(59, 15);
+            lblLocation.TabIndex = 6;
+            lblLocation.Text = "Location: ";
+            // 
             // LoginForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(346, 295);
+            Controls.Add(lblLocation);
             Controls.Add(btnExit);
             Controls.Add(btnLogin);
             Controls.Add(lblUsername);
@@ -113,5 +124,6 @@
         private Label lblUsername;
         private Button btnLogin;
         private Button btnExit;
+        private Label lblLocation;
     }
 }

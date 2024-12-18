@@ -26,7 +26,9 @@ namespace Apointment_Scheduler.Forms
             TimeZoneInfo.ClearCachedData();
             lblHeader.Text = "New Appointment";
             update = false;
+            Data.conn.Open();
             appointmentId = Data.GetNewId(Data.AppointmentIdxQuery, Data.conn);
+            Data.conn.Close();
             LoadForm();
         }
         public AppointmentForm(DataGridViewRow selectedRow)
@@ -56,6 +58,11 @@ namespace Apointment_Scheduler.Forms
         }
         private void btnSave_Click(object sender, EventArgs e)
         {
+            if (cbxName.SelectedIndex == -1 || cbxConsultant.SelectedIndex == -1 || cbxLocation.SelectedIndex == -1 || cbxType.SelectedIndex == -1 || cbxSTime.SelectedIndex == -1 || cbxETime.SelectedIndex == -1)
+            {
+                MessageBox.Show("Please fill out all Feilds");
+            }
+
             DateTime selectedDate = dtpDay.Value;
             string startTime = ((KeyValuePair<string, string>)cbxSTime.SelectedItem).Key.ToString();
             string endTime = ((KeyValuePair<string, string>)cbxETime.SelectedItem).Value.ToString();
@@ -98,6 +105,7 @@ namespace Apointment_Scheduler.Forms
         {
             //Requirement 3B: Using combo box to prevent invalid user input
             //set all combo boxes datasoures
+            //MessageBox.Show(Data.customerNames[0]);
             cbxName.DataSource = Data.customerNames;
             cbxConsultant.DataSource = Data.userNames;
 
@@ -115,6 +123,8 @@ namespace Apointment_Scheduler.Forms
             cbxETime.DisplayMember = "Value";
 
         }
+
+        
     }
 }
 

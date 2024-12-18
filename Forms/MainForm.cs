@@ -111,6 +111,7 @@ namespace Apointment_Scheduler
                 if (dgvMain.SelectedRows.Count == 0)
                 {
                     MessageBox.Show("Error: Nothing Selected");
+                    return;
                 }
                 new AppointmentForm(dgvMain.SelectedRows[0]).ShowDialog();
             }

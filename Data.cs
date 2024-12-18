@@ -83,9 +83,9 @@ namespace Apointment_Scheduler
         {
             conn.Open();
             MySqlDataAdapter sda = new MySqlDataAdapter(GetCustomerTableQuery, conn);
+            conn.Close();
             DataTable customerDataTable = new DataTable();
             sda.Fill(customerDataTable);
-            conn.Close();
             return customerDataTable;
         }
         public static DataTable GetAppointments(DateTime date)
@@ -97,18 +97,18 @@ namespace Apointment_Scheduler
 
             // Execute SQL Query
             DataTable FilterdAppointments = new DataTable();
+            conn.Open();
             using (MySqlCommand cmd = new MySqlCommand(GetFilteredAppointmentsQuery, conn))
             {
                 cmd.Parameters.AddWithValue("@StartDate", start);
                 cmd.Parameters.AddWithValue("@EndDate", end);
-                conn.Open();
                 cmd.ExecuteNonQuery();
-                conn.Close();
                 using (MySqlDataAdapter adapter = new MySqlDataAdapter(cmd))
                 {
                     adapter.Fill(FilterdAppointments);
                 }
             }
+            conn.Close();
             return ConvertToLocal(FilterdAppointments);
         }
         public static DataTable GetAppointments()
@@ -116,9 +116,9 @@ namespace Apointment_Scheduler
             //This function gets all appointments
             conn.Open();
             MySqlDataAdapter sda = new MySqlDataAdapter(GetAppointmentTableQuery, conn);
+            conn.Close();
             DataTable appointmentsDataTable = new DataTable();
             sda.Fill(appointmentsDataTable);
-            conn.Close();
             return ConvertToLocal(appointmentsDataTable);
         }
         public static int GetNewId(string query, MySqlConnection conn) => Convert.ToInt32(new MySqlCommand(query, conn).ExecuteScalar()) + 1;
@@ -126,7 +126,6 @@ namespace Apointment_Scheduler
         {
             try
             {
-                Data.conn.Open();
                 using (var cmd = new MySqlCommand(Data.GetUsersQuery, Data.conn))
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -140,16 +139,11 @@ namespace Apointment_Scheduler
             {
                 MessageBox.Show(ex.Message);
             }
-            finally
-            {
-                Data.conn.Close();
-            }
         }
         public static void GetCustomerNames()
         {
             try
             {
-                Data.conn.Open();
                 using (MySqlCommand cmd = new MySqlCommand(Data.GetCustomersQuery, Data.conn))
                 {
                     using (MySqlDataReader reader = cmd.ExecuteReader())
@@ -165,17 +159,11 @@ namespace Apointment_Scheduler
             {
                 MessageBox.Show(ex.Message);
             }
-            finally
-            {
-                Data.conn.Close();
-            }
-
         }
 
 
         public static DataTable GetAppointmentTypePerMonth(int month)
         {
-            //TODO: Not working
             DataTable dataTable = new DataTable();
             try
             {
@@ -215,19 +203,20 @@ namespace Apointment_Scheduler
                         adapter.Fill(consultantDataTable);
                     }
                 }
-                conn.Close();
             }
             catch (Exception ex) 
             {
                 MessageBox.Show(ex.Message);
             }
-            
+            finally
+            {
+                conn.Close();
+            }
+
             return ConvertToLocal(consultantDataTable);
         }
         public static DataTable GetAppointmentByType(string type)
         {
-            //TODO: not working
-            //one additional report of choice
             DataTable dataTable = new DataTable();
             try
             {
@@ -387,6 +376,7 @@ namespace Apointment_Scheduler
             //Requirement 2B: Add/Update Exeption Handling
             try
             {
+                conn.Open();
                 using (var transaction = conn.BeginTransaction())
                 {
                     try
@@ -417,7 +407,6 @@ namespace Apointment_Scheduler
         {
             int countryId;
             string query;
-
             if (update)
             {
                 countryId = int.Parse(customerData["CountryId"]);
@@ -442,7 +431,6 @@ namespace Apointment_Scheduler
                 countryInsertCMD.Prepare();
                 countryInsertCMD.ExecuteNonQuery();
             }
-
             return countryId;
         }
         private static int SaveCityData(Dictionary<string, string> customerData, MySqlConnection conn, int latestCountryId, bool update)
