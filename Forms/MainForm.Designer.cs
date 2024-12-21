@@ -51,6 +51,7 @@ namespace Apointment_Scheduler
             ckAllAppointments = new CheckBox();
             cbxReports = new ComboBox();
             lblReports = new Label();
+            ckMonth = new CheckBox();
             menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvMain).BeginInit();
             SuspendLayout();
@@ -210,12 +211,24 @@ namespace Apointment_Scheduler
             lblReports.TabIndex = 15;
             lblReports.Text = "Consultant";
             // 
+            // ckMonth
+            // 
+            ckMonth.AutoSize = true;
+            ckMonth.Location = new Point(839, 676);
+            ckMonth.Name = "ckMonth";
+            ckMonth.Size = new Size(116, 19);
+            ckMonth.TabIndex = 16;
+            ckMonth.Text = "Search by Month";
+            ckMonth.UseVisualStyleBackColor = true;
+            ckMonth.CheckedChanged += ckMonth_CheckedChanged;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             CancelButton = btnExit;
             ClientSize = new Size(1210, 723);
+            Controls.Add(ckMonth);
             Controls.Add(lblReports);
             Controls.Add(cbxReports);
             Controls.Add(ckAllAppointments);
@@ -258,5 +271,6 @@ namespace Apointment_Scheduler
         private CheckBox ckAllAppointments;
         private ComboBox cbxReports;
         private Label lblReports;
+        private CheckBox ckMonth;
     }
 }

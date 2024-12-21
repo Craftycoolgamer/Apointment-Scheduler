@@ -18,6 +18,7 @@ using Microsoft.VisualBasic.ApplicationServices;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using static System.Net.Mime.MediaTypeNames;
 using System.Security.Cryptography;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 
@@ -90,7 +91,7 @@ namespace Apointment_Scheduler
         }
         public static DataTable GetAppointments(DateTime date)
         {
-            //This function gets all appointments from the database that corispond to value
+            //This function gets all appointments from the database that corispond to date
             
             DateTime start = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0);
             DateTime end = new DateTime(date.Year, date.Month, date.Day, 23, 59, 59);
@@ -120,6 +121,25 @@ namespace Apointment_Scheduler
             DataTable appointmentsDataTable = new DataTable();
             sda.Fill(appointmentsDataTable);
             return ConvertToLocal(appointmentsDataTable);
+        }
+        public static DataTable GetAppointments(string month)
+        {
+            //This function gets all appointments from the database that corispond to month
+
+            // Execute SQL Query
+            DataTable FilterdAppointments = new DataTable();
+            conn.Open();
+            using (MySqlCommand cmd = new MySqlCommand(GetFilteredAppointmentsByMonthQuery, conn))
+            {
+                cmd.Parameters.AddWithValue("@Month", month);
+                cmd.ExecuteNonQuery();
+                using (MySqlDataAdapter adapter = new MySqlDataAdapter(cmd))
+                {
+                    adapter.Fill(FilterdAppointments);
+                }
+            }
+            conn.Close();
+            return ConvertToLocal(FilterdAppointments);
         }
         public static int GetNewId(string query, MySqlConnection conn) => Convert.ToInt32(new MySqlCommand(query, conn).ExecuteScalar()) + 1;
         public static DataTable GetUserNames()
@@ -174,6 +194,7 @@ namespace Apointment_Scheduler
                 {
                     consultantCMD.Parameters.AddWithValue("@UserName", userName);
                     consultantCMD.Parameters.AddWithValue("@UserId", userId);
+                    consultantCMD.ExecuteNonQuery();
                     using (MySqlDataAdapter adapter = new MySqlDataAdapter(consultantCMD))
                     {
                         adapter.Fill(consultantDataTable);
@@ -188,8 +209,8 @@ namespace Apointment_Scheduler
             {
                 conn.Close();
             }
-
-            return ConvertToLocal(consultantDataTable);
+            return consultantDataTable;
+            //return ConvertToLocal(consultantDataTable);
         }
         public static DataTable GetAppointmentByType(string type)
         {
@@ -855,6 +876,26 @@ namespace Apointment_Scheduler
                 "JOIN user u ON ap.userId = u.userId " +
                 "WHERE start BETWEEN @StartDate AND @EndDate " +
                 "ORDER BY ap.start";
+
+
+
+
+        public static string GetFilteredAppointmentsByMonthQuery =>
+                "SELECT ap.appointmentId, ap.customerId, ap.userId, ap.description, ap.location, " +
+                "ap.type, ap.url, ap.start, ap.end, u.userName, " +
+                "c.customerName, a.phone, a.addressId, a.cityId, ci.countryId " +
+                "FROM appointment ap " +
+                "JOIN customer c ON ap.customerId = c.customerId " +
+                "JOIN address a ON c.addressId = a.addressId " +
+                "JOIN city ci ON a.cityId = ci.cityId " +
+                "JOIN country co ON ci.countryId = co.countryId " +
+                "JOIN user u ON ap.userId = u.userId " +
+                "WHERE monthname(start)=@Month " +
+                "ORDER BY ap.start";
+
+
+
+
 
         public static string AppointmentIdxQuery => "SELECT appointmentId FROM appointment ORDER BY appointmentId DESC LIMIT 1";
         public static string DeleteAppointmentQuery => "DELETE FROM appointment WHERE appointmentId = @AppointmentId";

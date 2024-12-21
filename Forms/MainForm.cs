@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Data;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using Apointment_Scheduler.Forms;
+using System.Xml.Linq;
 
 namespace Apointment_Scheduler
 {
@@ -69,6 +70,10 @@ namespace Apointment_Scheduler
             RefreshTable();
         }
         private void cbxReports_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RefreshTable();
+        }
+        private void ckMonth_CheckedChanged(object sender, EventArgs e)
         {
             RefreshTable();
         }
@@ -216,12 +221,15 @@ namespace Apointment_Scheduler
                 ckAllAppointments.Hide();
                 lblReports.Hide();
                 cbxReports.Hide();
+                ckMonth.Hide();
             }
             else if (formState == FormState.Appointments)
             {
                 tabCustomers.ForeColor = Color.Black;
                 tabAppointments.ForeColor = mainColor;
                 tabReports.ForeColor = Color.Black;
+                lblReports.Text = "Month";
+                cbxReports.DataSource = Enum.GetNames(typeof(Months));
 
                 btnAdd.Show();
                 btnUpdate.Show();
@@ -229,8 +237,9 @@ namespace Apointment_Scheduler
                 btnReport.Hide();
                 dateTimePicker.Show();
                 ckAllAppointments.Show();
-                lblReports.Hide();
-                cbxReports.Hide();
+                lblReports.Show();
+                cbxReports.Show();
+                ckMonth.Show();
             }
             else if (formState == FormState.Month)
             {
@@ -248,6 +257,7 @@ namespace Apointment_Scheduler
                 ckAllAppointments.Hide();
                 lblReports.Show();
                 cbxReports.Show();
+                ckMonth.Hide();
             }
             else if (formState == FormState.Type)
             {
@@ -265,6 +275,7 @@ namespace Apointment_Scheduler
                 ckAllAppointments.Hide();
                 lblReports.Show();
                 cbxReports.Show();
+                ckMonth.Hide();
             }
             else if (formState == FormState.Consultants)
             {
@@ -272,9 +283,9 @@ namespace Apointment_Scheduler
                 tabAppointments.ForeColor = Color.Black;
                 tabReports.ForeColor = mainColor;
                 lblReports.Text = "Consultant";
-                cbxReports.DataSource = Data.GetUserNames();
                 cbxReports.DisplayMember = "userName";
                 cbxReports.ValueMember = "userId";
+                cbxReports.DataSource = Data.GetUserNames();
 
 
                 btnAdd.Hide();
@@ -285,6 +296,7 @@ namespace Apointment_Scheduler
                 ckAllAppointments.Hide();
                 lblReports.Show();
                 cbxReports.Show();
+                ckMonth.Hide();
             }
         }
         public void RefreshTable()
@@ -294,13 +306,23 @@ namespace Apointment_Scheduler
             {
                 if (!ckAllAppointments.Checked)
                 {
-                    dgvMain.DataSource = Data.GetAppointments(dateTimePicker.Value);
                     dateTimePicker.Enabled = true;
+                    ckMonth.Enabled = true;
+                    cbxReports.Enabled = true;
+                    if (ckMonth.Checked)
+                    {
+                        dateTimePicker.Enabled = false;
+                        dgvMain.DataSource = Data.GetAppointments(cbxReports.Text);
+                        return;
+                    }
+                    dgvMain.DataSource = Data.GetAppointments(dateTimePicker.Value);
                 }
                 else
                 {
                     dgvMain.DataSource = Data.GetAppointments();
                     dateTimePicker.Enabled = false;
+                    cbxReports.Enabled = false;
+                    ckMonth.Enabled = false;
                 }
                 SetupAppointmentDGV();
             }
@@ -323,8 +345,8 @@ namespace Apointment_Scheduler
             }
             else if (formState == FormState.Consultants)
             {
-                dgvMain.DataSource = Data.GetConsultantSchedules(((KeyValuePair<int, string>)cbxReports.SelectedItem).Value.ToString(),
-                                                                 ((KeyValuePair<int, string>)cbxReports.SelectedItem).Key.ToString());
+                                        //GetConsultantSchedules(string userName, string userId)
+                dgvMain.DataSource = Data.GetConsultantSchedules(cbxReports.Text, cbxReports.SelectedValue.ToString());
                 SetupAppointmentDGV();
             }
             else
@@ -334,5 +356,6 @@ namespace Apointment_Scheduler
         }
         #endregion
 
+        
     }
 }
