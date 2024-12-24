@@ -194,6 +194,16 @@ namespace Apointment_Scheduler
             dgvMain.Columns["phone"].HeaderText = "Phone";
             dgvMain.Columns["url"].HeaderText = "Visit Link";
 
+            dgvMain.Columns["customerName"].DisplayIndex = 0;
+            dgvMain.Columns["description"].DisplayIndex = 1;
+            dgvMain.Columns["userName"].DisplayIndex = 2;
+            dgvMain.Columns["type"].DisplayIndex = 3;
+            dgvMain.Columns["location"].DisplayIndex = 4;
+            dgvMain.Columns["start"].DisplayIndex = 5;
+            dgvMain.Columns["end"].DisplayIndex = 6;
+            dgvMain.Columns["phone"].DisplayIndex = 7;
+            dgvMain.Columns["url"].DisplayIndex = 8;
+
             dgvMain.Columns["customerId"].Visible = false;
             dgvMain.Columns["addressId"].Visible = false;
             dgvMain.Columns["cityId"].Visible = false;
@@ -206,6 +216,8 @@ namespace Apointment_Scheduler
         public void RefreshTableSettings()
         {
             Color mainColor = Color.Red;
+            dgvMain.Refresh();
+
             // Tab color
             if (formState == FormState.Customers)
             {
@@ -279,13 +291,14 @@ namespace Apointment_Scheduler
             }
             else if (formState == FormState.Consultants)
             {
+
                 tabCustomers.ForeColor = Color.Black;
                 tabAppointments.ForeColor = Color.Black;
                 tabReports.ForeColor = mainColor;
                 lblReports.Text = "Consultant";
+                cbxReports.DataSource = Data.GetUserNames();
                 cbxReports.DisplayMember = "userName";
                 cbxReports.ValueMember = "userId";
-                cbxReports.DataSource = Data.GetUserNames();
 
 
                 btnAdd.Hide();
@@ -302,6 +315,7 @@ namespace Apointment_Scheduler
         public void RefreshTable()
         {
             TimeZoneInfo.ClearCachedData();
+            dgvMain.Refresh();
             if (formState == FormState.Appointments)
             {
                 if (!ckAllAppointments.Checked)
@@ -336,16 +350,19 @@ namespace Apointment_Scheduler
             }
             else if (formState == FormState.Month)
             {
+                cbxReports.Enabled = true;
                 dgvMain.DataSource = Data.GetAppointmentTypePerMonth(cbxReports.SelectedIndex + 1);
             }
             else if (formState == FormState.Type)
             {
+                cbxReports.Enabled = true;
                 dgvMain.DataSource = Data.GetAppointmentByType(cbxReports.Text);
                 SetupAppointmentDGV();
             }
             else if (formState == FormState.Consultants)
             {
-                                        //GetConsultantSchedules(string userName, string userId)
+                cbxReports.Enabled = true;
+                //GetConsultantSchedules(string userName, string userId)
                 dgvMain.DataSource = Data.GetConsultantSchedules(cbxReports.Text, cbxReports.SelectedValue.ToString());
                 SetupAppointmentDGV();
             }
